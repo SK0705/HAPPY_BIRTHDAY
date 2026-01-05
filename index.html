@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>For Someone Special 💫</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- THREE IMPORT MAP -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  height:100%;
+  background:#000;
+  font-family:'Montserrat',sans-serif;
+  overflow:hidden;
+  color:#fff;
+}
+#container{position:fixed;inset:0}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle,rgba(0,255,200,.18),rgba(0,0,0,.92));
+  opacity:0;
+  transition:opacity 1s ease;
+  pointer-events:none;
+  z-index:1;
+}
+.overlay.active{opacity:1}
+
+.center{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+.hidden{display:none}
+
+/* UI */
+#namePrompt{
+  background:rgba(0,0,0,.7);
+  padding:2rem;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 0 35px rgba(0,255,200,.6);
+}
+#namePrompt h2{
+  font-size:1.8rem;
+  background:linear-gradient(to right,#00ffd5,#6a5acd);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+input{
+  margin-top:1rem;
+  padding:12px 20px;
+  width:280px;
+  border-radius:30px;
+  border:none;
+  text-align:center;
+  font-size:1.1rem;
+}
+button{
+  margin-top:1.4rem;
+  padding:12px 30px;
+  border-radius:30px;
+  border:none;
+  background:linear-gradient(45deg,#00ffd5,#6a5acd);
+  color:#000;
+  font-weight:700;
+  cursor:pointer;
+}
+
+/* Countdown */
+#timer{
+  font-family:'Dancing Script',cursive;
+  font-size:5rem;
+  color:#00ffd5;
+  animation:pulse 1s infinite alternate;
+}
+@keyframes pulse{to{transform:scale(1.1)}}
+
+/* Message */
+#birthdayMessage{
+  background:rgba(0,0,0,.7);
+  padding:1.8rem;
+  border-radius:20px;
+  box-shadow:0 0 40px rgba(0,255,200,.6);
+  text-align:center;
+}
+.line{
+  font-size:2rem;
+  opacity:0;
+  transform:translateY(30px);
+  animation:lineIn 1s forwards;
+}
+.line:nth-child(1){animation-delay:.1s}
+.line:nth-child(2){animation-delay:.2s}
+.line:nth-child(3){animation-delay:.3s}
+.line:nth-child(4){animation-delay:.4s}
+.line:nth-child(5){animation-delay:.5s}
+.line:nth-child(6){animation-delay:.6s}
+.line:nth-child(7){animation-delay:.7s}
+@keyframes lineIn{to{opacity:1;transform:none}}
+
+.highlight{
+  background:linear-gradient(to right,#00ffd5,#00ff7f);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.nameStyle{
+  font-family:'Pacifico',cursive;
+  font-size:2.8rem;
+  color:#00ffd5;
+}
+.final-line{
+  margin-top:1.4rem;
+  font-style:italic;
+  opacity:0;
+  animation:lineIn 1.2s forwards 2.6s;
+}
+.signature{
+  font-family:'Dancing Script',cursive;
+  font-size:2rem;
+  opacity:0;
+  animation:lineIn 1.2s forwards 3.3s;
+}
+#finalImage{
+  display:none;
+  margin-top:1.5rem;
+}
+#finalImage img{
+  max-width:260px;
+  border-radius:18px;
+  box-shadow:0 0 35px rgba(0,255,200,.6);
+}
+</style>
+</head>
+
+<body>
+
+<div id="container"></div>
+<div class="overlay"></div>
+
+<!-- NAME -->
+<div id="nameScreen" class="center">
+  <div id="namePrompt">
+    <h2>Enter your beautiful name ✨</h2>
+    <input id="nameInput" placeholder="Type your name here" aria-label="Name">
+    <button id="startBtn">Begin</button>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdownScreen" class="center hidden">
+  <div>
+    <h2>Hey <span id="nameDisplay"></span>…</h2>
+    <div id="timer">3</div>
+  </div>
+</div>
+
+<!-- MESSAGE -->
+<div id="messageScreen" class="center hidden">
+  <div id="birthdayMessage">
+    <div class="line">Many more happy returns to the young lady</div>
+    <div class="line">with a smile that disarms</div>
+    <div class="line">and eyes that carry the power of <span class="highlight">kintsugi</span> —</div>
+    <div class="line">strength in beauty.</div>
+    <div class="line"><strong>Happy Birthday, <span class="nameStyle" id="finalName"></span></strong></div>
+    <div class="line">To the one whose laughter lingers</div>
+    <div class="line">long after the moment passes.</div>
+    <div class="final-line">May your day be as beautiful as the light you bring to others</div>
+    <div class="signature">With magic ✨</div>
+
+    <div id="finalImage">
+      <img src="Happy Birthday.png" alt="Happy Birthday">
+    </div>
+  </div>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="BGM.mp3" type="audio/mpeg">
+</audio>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+/* ================= THEME ================= */
+const THEME = 'cosmic'; // change to 'emerald' if needed
+const COLORS = {
+  cosmic: 0x6a5acd,
+  emerald:0x00ff7f
+};
+
+/* PERFORMANCE */
+const isMobile=/Mobi|Android/i.test(navigator.userAgent);
+const COUNT=isMobile?4500:9000;
+
+/* THREE CORE */
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,1000);
+camera.position.z=90;
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2));
+document.getElementById("container").appendChild(renderer.domElement);
+
+/* POST */
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.4,0.7,0.7);
+composer.addPass(bloom);
+
+/* AUDIO */
+let audioCtx, analyser, data, audioReady=false;
+const music=document.getElementById("bgMusic");
+
+function initAudio(){
+  // Fix for local file silence: Web Audio API mutes output on file:// protocol due to CORS.
+  if(window.location.protocol==='file:') return;
+
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const src=audioCtx.createMediaElementSource(music);
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=256;
+  data=new Uint8Array(analyser.frequencyBinCount);
+  src.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  audioReady=true;
+}
+
+/* SHAPES */
+function star(i,n){
+  let a=i/n*Math.PI*2;
+  return new THREE.Vector3(Math.cos(a)*35,Math.sin(a)*35,Math.sin(a*4)*3);
+}
+function target(i,n){
+  let t=i/n*Math.PI*2;
+  return new THREE.Vector3(Math.cos(t)*20,Math.sin(t)*20,Math.sin(t*6)*6);
+}
+
+/* GEOMETRY */
+const geo=new THREE.BufferGeometry();
+const pos=new Float32Array(COUNT*3);
+const from=new Float32Array(COUNT*3);
+const to=new Float32Array(COUNT*3);
+
+for(let i=0;i<COUNT;i++){
+  const s=star(i,COUNT);
+  const t=target(i,COUNT);
+  from.set([s.x,s.y,s.z],i*3);
+  to.set([t.x,t.y,t.z],i*3);
+  pos.set([s.x,s.y,s.z],i*3);
+}
+geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+geo.setAttribute("from",new THREE.BufferAttribute(from,3));
+geo.setAttribute("to",new THREE.BufferAttribute(to,3));
+
+const mat=new THREE.PointsMaterial({
+  size:2.4,
+  color:COLORS[THEME],
+  transparent:true,
+  blending:THREE.AdditiveBlending
+});
+scene.add(new THREE.Points(geo,mat));
+
+/* ================= PROGRESSIVE EDGE MORPH ================= */
+let reveal=0;
+const speed=0.0004;
+const edgeWidth=0.09;
+
+function animate(){
+  requestAnimationFrame(animate);
+
+  let beat=0;
+  if(audioReady){
+    analyser.getByteFrequencyData(data);
+    let sum=0;
+    for(let i=2;i<40;i++) sum+=data[i];
+    beat=sum/38/255;
+  }
+
+  reveal=Math.min(1,reveal+speed+beat*0.012);
+
+  bloom.strength=0.35+beat*1.6;
+  mat.size=2.2+beat*1.8;
+
+  const p=geo.attributes.position.array;
+
+  for(let i=0;i<COUNT;i++){
+    const i3=i*3;
+    const t=i/COUNT;
+    const d=t-reveal;
+
+    let m=0;
+    if(d<0 && d>-edgeWidth){
+      m=THREE.MathUtils.smoothstep(1+d/edgeWidth,0,1);
+      // 🔥 EXTRA ENERGY AT EDGE
+      p[i3+2]+=Math.sin((reveal-t)*80)*beat*8;
+    }else if(d<=-edgeWidth){
+      m=1;
+    }
+
+    p[i3]+= (THREE.MathUtils.lerp(from[i3],to[i3],m)-p[i3]) * 0.15;
+    p[i3+1]+= (THREE.MathUtils.lerp(from[i3+1],to[i3+1],m)-p[i3+1]) * 0.15;
+    p[i3+2]+= (THREE.MathUtils.lerp(from[i3+2],to[i3+2],m)-p[i3+2]) * 0.15;
+  }
+
+  geo.attributes.position.needsUpdate=true;
+  composer.render();
+}
+animate();
+
+/* UI FLOW */
+document.getElementById("startBtn").onclick=()=>{
+  const name=document.getElementById("nameInput").value.trim();
+  if(!name) return alert("Please enter your beautiful name!");
+
+  document.getElementById("nameDisplay").textContent=name;
+  document.getElementById("finalName").textContent=`🎀 ${name.toUpperCase()} 🎀`;
+
+  // Initialize audio context immediately on user gesture to prevent browser blocking
+  if(!audioCtx) initAudio();
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+  music.play().catch(e => console.log("Playback failed:", e));
+
+  document.getElementById("nameScreen").classList.add("hidden");
+  document.getElementById("countdownScreen").classList.remove("hidden");
+
+  let c=3;
+  const timer=document.getElementById("timer");
+
+  const iv=setInterval(()=>{
+    c--; timer.textContent=c;
+    if(c<=0){
+      clearInterval(iv);
+      document.getElementById("countdownScreen").classList.add("hidden");
+      document.getElementById("messageScreen").classList.remove("hidden");
+      document.querySelector(".overlay").classList.add("active");
+
+      window.confetti({particleCount:120,spread:80,origin:{y:0.6}});
+    }
+  },1000);
+};
+
+window.addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  composer.setSize(innerWidth,innerHeight);
+});
+</script>
+
+</body>
+</html>
