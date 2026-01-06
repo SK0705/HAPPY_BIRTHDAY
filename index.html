@@ -1,377 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>For Someone Special 💫</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>For Someone Special 💫</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js"
+      }
+    }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
-  }
-}
-</script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --accent: #ff007f; --glow: #7a00ff; }
+        
+        body, html { 
+            background: #000; color: #fff; font-family: 'Montserrat', sans-serif; 
+            overflow: hidden; height: 100%; width: 100%; position: fixed;
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        canvas.webgl { position: fixed; top: 0; left: 0; z-index: 1; outline: none; touch-action: none; }
 
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+        .ui-layer {
+            position: absolute; z-index: 10; top: 0; left: 0; height: 100%; width: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: none; padding: 20px;
+        }
+        .interactive { pointer-events: auto; }
 
-/* Mobile optimization: allow scrolling for long messages but hide horizontal overflow */
-html, body {
-  height: 100%;
-  background: #000;
-  font-family: 'Montserrat', sans-serif;
-  overflow-x: hidden;
-  color: #fff;
-  -webkit-tap-highlight-color: transparent;
-}
+        .glass-box {
+            background: rgba(15, 0, 25, 0.75); backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 0, 127, 0.3);
+            padding: 2rem 1.5rem; border-radius: 25px; text-align: center;
+            width: 100%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
 
-/* Background stays fixed */
-#container {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
+        input {
+            width: 100%; padding: 18px; border-radius: 15px; border: 1.5px solid var(--accent);
+            background: rgba(0,0,0,0.5); color: #fff; margin-bottom: 20px; 
+            text-align: center; font-size: 16px; /* Prevents iOS zoom on focus */
+        }
 
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle, rgba(0,255,200,.1), rgba(0,0,0,.85));
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-.overlay.active { opacity: 1; }
+        .btn-glow {
+            width: 100%; padding: 18px; border-radius: 15px; border: none;
+            background: linear-gradient(45deg, var(--accent), var(--glow)); color: #fff;
+            font-weight: 700; cursor: pointer; letter-spacing: 1px; font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
+        }
 
-/* Content wrapper that allows scrolling on mobile */
-.center {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
-  padding: 2rem 1rem;
-}
+        #timer { font-family: 'Dancing Script'; font-size: 6rem; color: var(--accent); text-shadow: 0 0 20px var(--accent); }
 
-.hidden { display: none !important; }
-
-/* UI Boxes - Mobile Optimized width and glass effect */
-#namePrompt, #birthdayMessage {
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 2rem 1.5rem;
-  border-radius: 24px;
-  text-align: center;
-  box-shadow: 0 0 40px rgba(0, 255, 200, 0.2);
-  width: 100%;
-  max-width: 380px;
-  border: 1px solid rgba(0, 255, 213, 0.2);
-}
-
-#namePrompt h2 {
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  background: linear-gradient(to right, #00ffd5, #6a5acd);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #00ffd5;
-  background: rgba(255,255,255,0.05);
-  color: #fff;
-  font-size: 1rem;
-  text-align: center;
-  margin-bottom: 1rem;
-  outline: none;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(45deg, #00ffd5, #6a5acd);
-  color: #000;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-button:active { transform: scale(0.95); }
-
-/* Countdown */
-#timer {
-  font-family: 'Dancing Script', cursive;
-  font-size: 5rem;
-  color: #00ffd5;
-  text-shadow: 0 0 20px rgba(0,255,213,0.5);
-  animation: pulse 1s infinite alternate;
-}
-@keyframes pulse { to { transform: scale(1.15); } }
-
-/* Message Typography */
-.line {
-  font-size: 1.15rem;
-  line-height: 1.6;
-  margin-bottom: 10px;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: lineIn 0.8s forwards;
-}
-
-.highlight { color: #00ffd5; font-weight: bold; }
-
-.nameStyle {
-  font-family: 'Pacifico', cursive;
-  font-size: 1.8rem;
-  color: #00ffd5;
-  display: block;
-  margin: 15px 0;
-}
-
-.final-line {
-  margin-top: 20px;
-  font-size: 0.95rem;
-  font-style: italic;
-  opacity: 0;
-  animation: lineIn 1s forwards 2.5s;
-}
-
-.signature {
-  font-family: 'Dancing Script', cursive;
-  font-size: 1.8rem;
-  margin-top: 15px;
-  opacity: 0;
-  animation: lineIn 1s forwards 3.2s;
-}
-
-#finalImage {
-  display: none;
-  margin-top: 1.5rem;
-}
-#finalImage img {
-  width: 100%;
-  max-width: 240px;
-  border-radius: 15px;
-  box-shadow: 0 0 25px rgba(0, 255, 200, 0.4);
-}
-
-@keyframes lineIn { to { opacity: 1; transform: translateY(0); } }
-</style>
+        .message-content { opacity: 0; transform: translateY(30px); }
+        .line { font-size: 0.95rem; line-height: 1.6; margin-bottom: 8px; }
+        .nameStyle { 
+            font-family: 'Pacifico', cursive; font-size: 1.8rem; color: var(--accent); 
+            display: block; margin: 10px 0; text-shadow: 0 0 10px var(--accent);
+        }
+        .highlight { color: #d4af37; font-weight: bold; }
+        .hidden { display: none !important; }
+    </style>
 </head>
-
 <body>
 
-<div id="container"></div>
-<div class="overlay"></div>
+<canvas class="webgl"></canvas>
 
-<div id="nameScreen" class="center">
-  <div id="namePrompt">
-    <h2>Enter your beautiful name ✨</h2>
-    <input id="nameInput" type="text" placeholder="Your name..." aria-label="Name">
-    <button id="startBtn">Begin Experience</button>
-  </div>
-</div>
-
-<div id="countdownScreen" class="center hidden">
-  <div style="text-align:center">
-    <h2 style="margin-bottom:1rem">Hey <span id="nameDisplay"></span>...</h2>
-    <div id="timer">3</div>
-  </div>
-</div>
-
-<div id="messageScreen" class="center hidden">
-  <div id="birthdayMessage">
-    <div class="line" style="animation-delay: 0.2s">Many more happy returns to the young lady</div>
-    <div class="line" style="animation-delay: 0.4s">with a smile that disarms</div>
-    <div class="line" style="animation-delay: 0.6s">and eyes that carry the power of <span class="highlight">kintsugi</span> —</div>
-    <div class="line" style="animation-delay: 0.8s">strength in beauty.</div>
-    <div class="line" style="animation-delay: 1.0s"><strong>Happy Birthday, <span class="nameStyle" id="finalName"></span></strong></div>
-    <div class="line" style="animation-delay: 1.2s">To the one whose laughter lingers</div>
-    <div class="line" style="animation-delay: 1.4s">long after the moment passes.</div>
-    <div class="final-line">May your day be as beautiful as the light you bring to others</div>
-    <div class="signature">With magic ✨</div>
-
-    <div id="finalImage">
-      <img src="Happy Birthday.png" alt="Happy Birthday">
+<div class="ui-layer interactive" id="mainUI">
+    <div id="screen-name" class="glass-box">
+        <h2 style="margin-bottom:15px; color: #ff007f; font-size: 1.4rem;">For Someone Special ✨</h2>
+        <input type="text" id="userName" placeholder="Enter her name..." autocomplete="off">
+        <button class="btn-glow" id="btnBegin">OPEN THE UNIVERSE</button>
     </div>
-  </div>
+
+    <div id="screen-timer" class="hidden">
+        <div id="timer">3</div>
+    </div>
+
+    <div id="screen-message" class="glass-box hidden">
+        <div class="message-content">
+            <div class="line">Many more happy returns to the young lady</div>
+            <div class="line">with a smile that disarms and eyes that carry</div>
+            <div class="line">the power of <span class="highlight">kintsugi</span> — strength in beauty.</div>
+            <span class="nameStyle" id="displayName"></span>
+            <div class="line">May your day be as beautiful as the light you bring.</div>
+            <div style="font-family: 'Dancing Script'; font-size: 1.8rem; color: var(--accent);">With magic ✨</div>
+        </div>
+    </div>
 </div>
 
-<audio id="bgMusic" loop>
-  <source src="BGM.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgMusic" loop preload="auto"><source src="BGM.mp3" type="audio/mpeg"></audio>
 
 <script type="module">
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-const THEME = 'cosmic'; 
-const COLORS = { cosmic: 0x6a5acd, emerald: 0x00ff7f };
+// Detect Mobile for Optimization
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-const COUNT = isMobile ? 4000 : 9000; // Lowered for mobile performance
-
+const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = isMobile ? 110 : 90; // Pull back camera on mobile
 
-const renderer = new THREE.WebGLRenderer({ antialias: !isMobile });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-document.getElementById("container").appendChild(renderer.domElement);
+const parameters = {
+    count: isMobile ? 45000 : 100000, // Reduced for mobile performance
+    size: isMobile ? 0.018 : 0.012,    // Slightly larger particles for visibility
+    radius: 5,
+    branches: 3,
+    spin: 1.2,
+    randomness: 0.25,
+    randomnessPower: 3,
+    insideColor: '#ff007f', 
+    outsideColor: '#2b0c52'
+};
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.4, 0.7, 0.7);
-composer.addPass(bloom);
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(parameters.count * 3);
+const colors = new Float32Array(parameters.count * 3);
 
-let audioCtx, analyser, data, audioReady = false;
-const music = document.getElementById("bgMusic");
+const galaxyTarget = new Float32Array(parameters.count * 3);
+const cakeTarget = new Float32Array(parameters.count * 3);
 
-function initAudio() {
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const src = audioCtx.createMediaElementSource(music);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    data = new Uint8Array(analyser.frequencyBinCount);
-    src.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    audioReady = true;
-  } catch(e) { console.error("Audio init failed", e); }
+const colorInside = new THREE.Color(parameters.insideColor);
+const colorOutside = new THREE.Color(parameters.outsideColor);
+
+for(let i = 0; i < parameters.count; i++) {
+    const i3 = i * 3;
+    const radius = Math.random() * parameters.radius;
+    const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2;
+    const spinAngle = radius * parameters.spin;
+
+    // Galaxy Data
+    galaxyTarget[i3] = Math.cos(branchAngle + spinAngle) * radius + (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.3 * radius);
+    galaxyTarget[i3 + 1] = (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.3 * radius);
+    galaxyTarget[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + (Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.3 * radius);
+
+    // Cake Data
+    let r, h, isFlame = false;
+    const rand = Math.random();
+    if (rand < 0.8) { // Body
+        const layer = Math.random();
+        if (layer < 0.5) { r = 2.2; h = Math.random() * 1.4; }
+        else if (layer < 0.8) { r = 1.6; h = 1.4 + Math.random() * 1.1; }
+        else { r = 1.0; h = 2.5 + Math.random() * 0.8; }
+        const angle = Math.random() * Math.PI * 2;
+        cakeTarget[i3] = Math.cos(angle) * r;
+        cakeTarget[i3 + 1] = h - 1.2;
+        cakeTarget[i3 + 2] = Math.sin(angle) * r;
+    } else if (rand < 0.9) { // Candles
+        const cx = [0, 0.5, -0.5][i % 3];
+        const cz = [0.4, -0.2, -0.2][i % 3];
+        cakeTarget[i3] = cx;
+        cakeTarget[i3 + 1] = 3.3 + (Math.random() * 0.8) - 1.2;
+        cakeTarget[i3 + 2] = cz;
+    } else { // Flames
+        isFlame = true;
+        const cx = [0, 0.5, -0.5][i % 3];
+        const cz = [0.4, -0.2, -0.2][i % 3];
+        cakeTarget[i3] = cx + (Math.random()-0.5)*0.1;
+        cakeTarget[i3 + 1] = 4.1 + (Math.random() * 0.3) - 1.2;
+        cakeTarget[i3 + 2] = cz + (Math.random()-0.5)*0.1;
+    }
+
+    positions[i3] = galaxyTarget[i3];
+    positions[i3+1] = galaxyTarget[i3+1];
+    positions[i3+2] = galaxyTarget[i3+2];
+
+    const mix = isFlame ? new THREE.Color('#ffaa00') : colorInside.clone().lerp(colorOutside, radius/5);
+    colors[i3] = mix.r; colors[i3+1] = mix.g; colors[i3+2] = mix.b;
 }
 
-function star(i, n) {
-  let a = i / n * Math.PI * 2;
-  return new THREE.Vector3(Math.cos(a) * 35, Math.sin(a) * 35, Math.sin(a * 4) * 3);
-}
-function target(i, n) {
-  let t = i / n * Math.PI * 2;
-  return new THREE.Vector3(Math.cos(t) * 20, Math.sin(t) * 20, Math.sin(t * 6) * 6);
-}
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-const geo = new THREE.BufferGeometry();
-const pos = new Float32Array(COUNT * 3);
-const from = new Float32Array(COUNT * 3);
-const to = new Float32Array(COUNT * 3);
-
-for(let i = 0; i < COUNT; i++) {
-  const s = star(i, COUNT);
-  const t = target(i, COUNT);
-  from.set([s.x, s.y, s.z], i * 3);
-  to.set([t.x, t.y, t.z], i * 3);
-  pos.set([s.x, s.y, s.z], i * 3);
-}
-geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-geo.setAttribute("from", new THREE.BufferAttribute(from, 3));
-geo.setAttribute("to", new THREE.BufferAttribute(to, 3));
-
-const mat = new THREE.PointsMaterial({
-  size: isMobile ? 1.8 : 2.4,
-  color: COLORS[THEME],
-  transparent: true,
-  blending: THREE.AdditiveBlending
+const material = new THREE.PointsMaterial({
+    size: parameters.size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true
 });
-scene.add(new THREE.Points(geo, mat));
 
-let reveal = 0;
-const speed = 0.0005;
-const edgeWidth = 0.1;
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3, 7);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile }); // Antialias off on mobile for speed
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 function animate() {
-  requestAnimationFrame(animate);
-  let beat = 0;
-  if(audioReady) {
-    analyser.getByteFrequencyData(data);
-    let sum = 0;
-    for(let i = 2; i < 30; i++) sum += data[i];
-    beat = sum / 28 / 255;
-  }
-
-  reveal = Math.min(1, reveal + speed + beat * 0.01);
-  bloom.strength = 0.3 + beat * 1.5;
-  mat.size = (isMobile ? 1.6 : 2.2) + beat * 2;
-
-  const p = geo.attributes.position.array;
-  for(let i = 0; i < COUNT; i++) {
-    const i3 = i * 3;
-    const t = i / COUNT;
-    const d = t - reveal;
-    let m = 0;
-    if(d < 0 && d > -edgeWidth) {
-      m = THREE.MathUtils.smoothstep(1 + d / edgeWidth, 0, 1);
-      p[i3 + 2] += Math.sin((reveal - t) * 50) * beat * 5;
-    } else if(d <= -edgeWidth) { m = 1; }
-
-    p[i3] += (THREE.MathUtils.lerp(from[i3], to[i3], m) - p[i3]) * 0.12;
-    p[i3+1] += (THREE.MathUtils.lerp(from[i3+1], to[i3+1], m) - p[i3+1]) * 0.12;
-    p[i3+2] += (THREE.MathUtils.lerp(from[i3+2], to[i3+2], m) - p[i3+2]) * 0.12;
-  }
-
-  geo.attributes.position.needsUpdate = true;
-  composer.render();
+    points.rotation.y += 0.0015;
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
 }
 animate();
 
-/* UI FLOW */
-document.getElementById("startBtn").onclick = () => {
-  const name = document.getElementById("nameInput").value.trim();
-  if(!name) return alert("Please enter your beautiful name!");
+const btnBegin = document.getElementById('btnBegin');
+const bgMusic = document.getElementById('bgMusic');
 
-  document.getElementById("nameDisplay").textContent = name;
-  document.getElementById("finalName").textContent = `${name.toUpperCase()}`;
-
-  if(!audioCtx) initAudio();
-  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  music.play().catch(e => console.log("Playback blocked"));
-
-  document.getElementById("nameScreen").classList.add("hidden");
-  document.getElementById("countdownScreen").classList.remove("hidden");
-
-  let c = 3;
-  const timer = document.getElementById("timer");
-  const iv = setInterval(() => {
-    c--; 
-    if(c > 0) timer.textContent = c;
-    if(c <= 0) {
-      clearInterval(iv);
-      document.getElementById("countdownScreen").classList.add("hidden");
-      document.getElementById("messageScreen").classList.remove("hidden");
-      document.querySelector(".overlay").classList.add("active");
-      window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
-      
-      // Delay image showing to let text be read
-      setTimeout(() => {
-        const imgDiv = document.getElementById("finalImage");
-        imgDiv.style.display = "block";
-      }, 4000);
-    }
-  }, 1000);
+btnBegin.onclick = () => {
+    const name = document.getElementById('userName').value.trim();
+    if(!name) return alert("Please enter her name ✨");
+    document.getElementById('displayName').innerText = name;
+    bgMusic.play().catch(() => {}); // Handle browser audio block
+    
+    gsap.to('#screen-name', { opacity: 0, duration: 0.8, onComplete: () => {
+        document.getElementById('screen-name').classList.add('hidden');
+        document.getElementById('screen-timer').classList.remove('hidden');
+        let c = 3;
+        const t = setInterval(() => {
+            c--;
+            if(c>0) document.getElementById('timer').innerText = c;
+            else { 
+                clearInterval(t); 
+                document.getElementById('screen-timer').classList.add('hidden');
+                morph(); 
+            }
+        }, 1000);
+    }});
 };
 
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
+function morph() {
+    const pos = points.geometry.attributes.position.array;
+    for(let i=0; i<parameters.count; i++) {
+        const i3 = i*3;
+        gsap.to(pos, {
+            [i3]: cakeTarget[i3], [i3+1]: cakeTarget[i3+1], [i3+2]: cakeTarget[i3+2],
+            duration: 4, ease: "power2.inOut", delay: Math.random() * 0.5,
+            onUpdate: () => points.geometry.attributes.position.needsUpdate = true
+        });
+    }
+    gsap.to(camera.position, { x: 0, y: 1, z: isMobile ? 9 : 7, duration: 5 });
+    setTimeout(final, 6500);
+}
+
+function final() {
+    document.getElementById('screen-message').classList.remove('hidden');
+    gsap.to('.message-content', { opacity: 1, y: 0, duration: 1.5 });
+    window.confetti({ particleCount: 80, spread: 50, origin: { y: 0.7 }, colors: ['#ff007f', '#ffffff'] });
+}
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
-
 </body>
 </html>
